@@ -6,6 +6,8 @@ import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../domain/card_model.dart';
 import '../data/card_repository.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 
 class AddCardScreen extends HookConsumerWidget {
   final CardModel? cardToEdit; // Parameter for edit mode
@@ -25,8 +27,8 @@ class AddCardScreen extends HookConsumerWidget {
     final creditLimitController = useTextEditingController(text: cardToEdit?.creditLimit?.toString());
     
     // Dropdown selections state
-    final selectedBankDropdown = useState<String?>(cardToEdit != null ? (['HDFC', 'SBI', 'ICICI', 'Axis', 'Kotak', 'Yes Bank', 'RBL Bank', 'SBM Bank', 'Union Bank', 'HSBC', 'IDFC First Bank', 'IndusInd Bank', 'Other'].contains(cardToEdit!.bankName) ? cardToEdit!.bankName : 'Other') : 'HDFC');
-    final selectedSubCategoryDropdown = useState<String?>(cardToEdit != null ? (['Amazon Pay', 'Flipkart Axis', 'Privilege', 'Amex Privilege', 'Cashback', 'Neo', 'Swiggy HDFC', 'Tata Neu', 'Millennia', 'Regalia', 'Coral', 'Sapphiro', 'Other'].contains(cardToEdit!.subCategory) ? cardToEdit!.subCategory : 'Other') : 'Amazon Pay');
+    final selectedBankDropdown = useState<String?>(cardToEdit != null ? (['HDFC', 'SBI', 'ICICI', 'Axis', 'Kotak', 'Yes Bank', 'RBL Bank', 'SBM Bank', 'Union Bank', 'HSBC', 'IDFC First Bank', 'IndusInd Bank', 'Other'].contains(cardToEdit!.bankName) ? cardToEdit!.bankName : 'Other') : null);
+    final selectedSubCategoryDropdown = useState<String?>(cardToEdit != null ? (['Amazon Pay', 'Flipkart Axis', 'Privilege', 'Amex Privilege', 'Cashback', 'Neo', 'Swiggy HDFC', 'Tata Neu', 'Millennia', 'Regalia', 'Coral', 'Sapphiro', 'Other'].contains(cardToEdit!.subCategory) ? cardToEdit!.subCategory : 'Other') : null);
     
     final selectedCardType = useState(cardToEdit?.cardType ?? CardType.credit);
     final selectedColorIndex = useState(cardToEdit?.colorIndex ?? 0);
@@ -41,6 +43,9 @@ class AddCardScreen extends HookConsumerWidget {
       }
       return null;
     }, []);
+
+
+
 
     return Scaffold(
       backgroundColor: Colors.black, // Deep black background
@@ -162,6 +167,7 @@ class AddCardScreen extends HookConsumerWidget {
                   formKey.value.currentState?.setState(() {});
                 },
                 decoration: const InputDecoration(labelText: 'Select Bank', prefixIcon: Icon(Icons.account_balance)),
+                validator: (v) => v == null ? 'Please select a bank' : null,
               ),
               if (selectedBankDropdown.value == 'Other') ...[
                  const SizedBox(height: 10),
@@ -178,7 +184,7 @@ class AddCardScreen extends HookConsumerWidget {
               // Sub Category Input (Dropdown + Text)
               DropdownButtonFormField<String>(
                 value: selectedSubCategoryDropdown.value,
-                items: ['Amazon Pay', 'Flipkart Axis', 'Privilege', 'Amex Privilege', 'Cashback', 'Neo', 'Swiggy HDFC', 'Tata Neu', 'Millennia', 'Regalia', 'Coral', 'Sapphiro', 'Other']
+                items: ['Amazon Pay', 'Flipkart', 'Privilege', 'Amex Privilege', 'Cashback', 'Neo', 'MoneyBack', 'Coral', 'MyZone', 'Swiggy', 'Tata Neu', 'Millennia', 'Regalia', 'Sapphiro', 'SimplyCLICK', 'Myntra', 'Paytm', 'IndianOil', 'BPCL', 'HPCL', 'Other']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
                 onChanged: (v) {
@@ -191,6 +197,7 @@ class AddCardScreen extends HookConsumerWidget {
                   formKey.value.currentState?.setState(() {});
                 },
                 decoration: const InputDecoration(labelText: 'Card Sub-Category', prefixIcon: Icon(Icons.category)),
+                validator: (v) => v == null ? 'Please select a category' : null,
               ),
               if (selectedSubCategoryDropdown.value == 'Other') ...[
                  const SizedBox(height: 10),
@@ -228,7 +235,28 @@ class AddCardScreen extends HookConsumerWidget {
                       controller: expiryDateController,
                       decoration: const InputDecoration(labelText: 'Expiry (MM/YY)', prefixIcon: Icon(Icons.date_range)),
                       onChanged: (_) => formKey.value.currentState?.setState(() {}),
-                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Required';
+                        if (v.length != 5) return 'Invalid Format (MM/YY)';
+                        
+                        final parts = v.split('/');
+                        if (parts.length != 2) return 'Invalid Format';
+                        
+                        final month = int.tryParse(parts[0]);
+                        final year = int.tryParse(parts[1]);
+                        
+                        if (month == null || year == null) return 'Invalid Date';
+                        if (month < 1 || month > 12) return 'Invalid Month';
+                        
+                        final now = DateTime.now();
+                        final currentYear = now.year % 100; // Get last 2 digits
+                        final currentMonth = now.month;
+                        
+                        if (year < currentYear) return 'Card Expired';
+                        if (year == currentYear && month < currentMonth) return 'Card Expired';
+                        
+                        return null;
+                      },
                       maxLength: 5,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
@@ -274,11 +302,29 @@ class AddCardScreen extends HookConsumerWidget {
               ElevatedButton(
                 onPressed: () async {
                   if (formKey.value.currentState!.validate()) {
+                    final enteredCardNumber = cardNumberController.text.trim();
+                    
+                    // Check for duplicate card number (only for new cards)
+                    if (cardToEdit == null) {
+                      final existingCards = ref.read(cardRepositoryProvider).getAllCards();
+                      final isDuplicate = existingCards.any((c) => c.cardNumber == enteredCardNumber);
+                      
+                      if (isDuplicate) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Card already exists!'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+                    }
+
                     final card = CardModel(
                       id: cardToEdit?.id, // Preserve ID for updates
                       bankName: bankNameController.text,
                       holderName: holderNameController.text,
-                      cardNumber: cardNumberController.text,
+                      cardNumber: enteredCardNumber,
                       expiryDate: expiryDateController.text,
                       cvv: cvvController.text,
                       cardType: selectedCardType.value,

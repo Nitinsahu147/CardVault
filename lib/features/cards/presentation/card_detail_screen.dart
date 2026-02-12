@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../domain/card_model.dart';
 import '../../transactions/domain/transaction_model.dart';
@@ -102,7 +103,7 @@ class CardDetailScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Hero(
               tag: card.id,
-              child: CardWidget(card: card),
+              child: CardWidget(card: card, enableBlur: true),
             ),
           ),
           const SizedBox(height: 30),
@@ -325,19 +326,60 @@ class CardDetailScreen extends ConsumerWidget {
                     style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)
                   ),
                   const SizedBox(height: 20),
-                  TextField(
-                    controller: amountController,
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(labelText: 'Amount', prefixText: '\₹ '),
+
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Amount', style: GoogleFonts.sourceCodePro(color: Colors.white70, fontSize: 14)),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: TextField(
+                          controller: amountController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          style: GoogleFonts.sourceCodePro(color: Colors.white),
+                          decoration: const InputDecoration(
+                            hintText: '0.00',
+                            prefixIcon: Icon(Icons.currency_rupee, color: AppTheme.primaryColor),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: noteController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(labelText: 'Note (e.g. Grocery, Netflix)'),
+                  
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Note', style: GoogleFonts.sourceCodePro(color: Colors.white70, fontSize: 14)),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: TextField(
+                          controller: noteController,
+                          style: GoogleFonts.sourceCodePro(color: Colors.white),
+                          decoration: const InputDecoration(
+                            hintText: 'e.g. Grocery, Netflix',
+                            prefixIcon: Icon(Icons.edit_note, color: AppTheme.primaryColor),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
+
+                  const SizedBox(height: 24), // Increased spacing before Date
                   InkWell(
                     onTap: () async {
                       final picked = await showDatePicker(

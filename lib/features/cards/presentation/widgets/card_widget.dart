@@ -10,22 +10,47 @@ import '../card_stack_screen.dart'; // For invalidating provider
 
 class CardWidget extends ConsumerWidget {
   final CardModel card;
+  final bool enableBlur;
 
-  const CardWidget({super.key, required this.card});
+  const CardWidget({super.key, required this.card, this.enableBlur = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return GlassContainer(
-      height: 220,
-      width: double.infinity,
-      borderRadius: BorderRadius.circular(20),
-      blur: 15,
-      border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
-      gradient: LinearGradient(
-        colors: _getCardColors(card.colorIndex),
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
+    if (enableBlur) {
+      return GlassContainer(
+        height: 220,
+        width: double.infinity,
+        borderRadius: BorderRadius.circular(20),
+        blur: 15,
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+        gradient: LinearGradient(
+          colors: _getCardColors(card.colorIndex),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        child: _buildCardContent(context, ref),
+      );
+    } else {
+      return Container(
+        height: 220,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+          gradient: LinearGradient(
+            colors: _getCardColors(card.colorIndex),
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: _buildCardContent(context, ref),
+      );
+    }
+  }
+
+  Widget _buildCardContent(BuildContext context, WidgetRef ref) {
+    return Material(
+      type: MaterialType.transparency,
       child: Stack(
         children: [
           // Background Pattern
