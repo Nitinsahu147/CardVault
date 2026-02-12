@@ -54,9 +54,9 @@ Manage your spending with intuitive visualizations, track transactions, and secu
 
 ## 📸 Screenshots
 
-| Home Screen | Add New Card | Add Transaction | Security Settings |
+| Home Screen | Card Details | Add Transaction | Security Settings |
 |:-----------:|:------------:|:---------------:|:-----------------:|
-| <img src="assets/screenshots/home.jpg" width="200" alt="Home Screen"> | <img src="assets/screenshots/addCard.jpg" width="200" alt="Add New Card"> | <img src="assets/screenshots/transaction.jpg" width="200" alt="Add Transaction"> | <img src="assets/screenshots/settings.jpg" width="200" alt="Settings"> |
+| <img src="assets/screenshots/home.jpg" width="200" alt="Home Screen"> | <img src="assets/screenshots/detail.jpg" width="200" alt="Card Details"> | <img src="assets/screenshots/transaction.jpg" width="200" alt="Add Transaction"> | <img src="assets/screenshots/settings.jpg" width="200" alt="Settings"> |
 
 ---
 
